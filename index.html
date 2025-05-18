@@ -51,7 +51,12 @@
   </style>
 </head>
 <body>
-  <div id="display"></div>
+  <div id="display">
+    <div class="doctor-name" id="doctorName"></div>
+    <div class="room" id="roomNo"></div>
+    <div class="token-label" id="tokenLabel">Token</div>
+    <div class="token-number" id="tokenNumber"></div>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -80,24 +85,33 @@
       }
 
       async function updateDisplay() {
-        const displayDiv = document.getElementById('display');
         const tokenData = await fetchDoctorToken(DOCTOR_NAME);
 
+        const doctorEl = document.getElementById('doctorName');
+        const roomEl = document.getElementById('roomNo');
+        const tokenEl = document.getElementById('tokenNumber');
+
         if (!tokenData) {
-          displayDiv.innerHTML = '';
+          doctorEl.textContent = '';
+          roomEl.textContent = '';
+          tokenEl.textContent = '';
           return;
         }
 
-        const newToken = tokenData["TOKEN NUMBER"];
-        const shouldFlicker = lastTokenNumber !== null && newToken !== lastTokenNumber;
-        lastTokenNumber = newToken;
+        doctorEl.textContent = tokenData["DOCTOR NAME"];
+        roomEl.textContent = `Room : ${tokenData["ROOM NO"]}`;
 
-        displayDiv.innerHTML = `
-          <div class="doctor-name">${tokenData["DOCTOR NAME"]}</div>
-          <div class="room">Room : ${tokenData["ROOM NO"]}</div>
-          <div class="token-label">Token</div>
-          <div class="token-number ${shouldFlicker ? 'flicker' : ''}">${newToken}</div>
-        `;
+        const newToken = tokenData["TOKEN NUMBER"];
+
+        if (lastTokenNumber !== null && newToken !== lastTokenNumber) {
+          // Flicker effect
+          tokenEl.classList.remove('flicker');
+          void tokenEl.offsetWidth; // Force reflow
+          tokenEl.classList.add('flicker');
+        }
+
+        tokenEl.textContent = newToken;
+        lastTokenNumber = newToken;
       }
 
       await updateDisplay();
