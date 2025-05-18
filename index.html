@@ -24,7 +24,7 @@
       font-weight: bold;
     }
     .room {
-      font-size: 4em;
+      font-size: 5em;
       margin-top: 0.5em;
       font-family: 'Roboto', sans-serif;
       font-weight: 700;
@@ -39,6 +39,15 @@
       font-family: 'Inter', sans-serif;
       font-weight: 700;
     }
+
+    .flicker {
+      animation: flickerAnimation 3s ease-in-out;
+    }
+
+    @keyframes flickerAnimation {
+      0%, 20%, 40%, 60%, 80%, 100% { opacity: 1; }
+      10%, 30%, 50%, 70%, 90% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -51,8 +60,8 @@
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3c2VxbnR6dHhlcWd1dnVocm1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODYyNDAsImV4cCI6MjA2MDU2MjI0MH0.EsMdhQaGxr8VIQeW4hCF11zFYWRfA8nAButBj_F-_U8';
 
       const supabaseClient = createClient(supabaseUrl, supabaseKey);
-
-      const DOCTOR_1 = 'Dr. Harshanand P';
+      const DOCTOR_NAME = 'Dr. Harshanand P';
+      let lastTokenNumber = null;
 
       async function fetchDoctorToken(doctorName) {
         const { data, error } = await supabaseClient
@@ -72,20 +81,22 @@
 
       async function updateDisplay() {
         const displayDiv = document.getElementById('display');
-        displayDiv.innerHTML = 'Loading...';
-
-        const tokenData = await fetchDoctorToken(DOCTOR_1);
+        const tokenData = await fetchDoctorToken(DOCTOR_NAME);
 
         if (!tokenData) {
-          displayDiv.innerHTML = '<p style="font-size: 3em;">No data available</p>';
+          displayDiv.innerHTML = '';
           return;
         }
+
+        const newToken = tokenData["TOKEN NUMBER"];
+        const shouldFlicker = lastTokenNumber !== null && newToken !== lastTokenNumber;
+        lastTokenNumber = newToken;
 
         displayDiv.innerHTML = `
           <div class="doctor-name">${tokenData["DOCTOR NAME"]}</div>
           <div class="room">Room : ${tokenData["ROOM NO"]}</div>
           <div class="token-label">Token</div>
-          <div class="token-number">${tokenData["TOKEN NUMBER"]}</div>
+          <div class="token-number ${shouldFlicker ? 'flicker' : ''}">${newToken}</div>
         `;
       }
 
